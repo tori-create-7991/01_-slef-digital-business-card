@@ -1,0 +1,215 @@
+:root {
+  --bg-color: #f7f7f7;
+  --card-bg: #ffffff;
+  --text-color: #000000;
+  --subtext-color: #666666;
+  --border-radius: 24px;
+  --gap: 20px;
+  --transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 40px 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.bento-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 180px; /* Fixed height for basic unit */
+  gap: var(--gap);
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* Card General Styles */
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Profile Card */
+.profile-card {
+  grid-column: span 2;
+  grid-row: span 2;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.profile-text h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.profile-text p {
+  color: var(--subtext-color);
+  font-size: 0.95rem;
+}
+
+/* Social Cards (Small Squares) */
+.social-card {
+  grid-column: span 1;
+  grid-row: span 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.social-card .icon-wrapper {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+
+.card-label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.card-sublabel {
+  color: var(--subtext-color);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+/* Specific Social Colors */
+.twitter { background-color: #1DA1F2; color: white; }
+.twitter .card-sublabel { color: rgba(255,255,255,0.8); }
+.linkedin { background-color: #0077B5; color: white; }
+.linkedin .card-sublabel { color: rgba(255,255,255,0.8); }
+.facebook { background-color: #1877F2; color: white; }
+.github { background-color: #24292e; color: white; }
+.github .card-sublabel { color: rgba(255,255,255,0.8); }
+
+/* Instagram Card (Large) */
+.instagram-card {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  color: white;
+  padding: 0;
+}
+
+.instagram-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.instagram-header .icon-wrapper { font-size: 2rem; }
+.instagram-header .card-sublabel { color: rgba(255,255,255,0.8); }
+
+.instagram-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    height: calc(100% - 80px); /* Subtract approximate header height */
+    width: 100%;
+}
+
+.instagram-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Link Cards (Rich Links with Image) */
+.link-card {
+  grid-column: span 2;
+  grid-row: span 1;
+  display: flex;
+  flex-direction: row;
+}
+
+.link-preview {
+  width: 40%;
+  background-size: cover;
+  background-position: center;
+}
+
+.link-info {
+  width: 60%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bento-container {
+    grid-template-columns: 1fr; /* Single column */
+    grid-auto-rows: auto; /* Let content dictate height */
+  }
+
+  .card {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    min-height: 150px;
+  }
+
+  .profile-card {
+    min-height: 300px; /* Keep profile large enough */
+  }
+
+  .instagram-card {
+    min-height: 400px; /* Needs space for grid */
+  }
+
+  .instagram-grid {
+     height: 300px;
+  }
+
+  /* Make link cards stack vertically internally on very small screens? No, keep side-by-side but taller */
+  .link-card {
+      min-height: 120px;
+  }
+}
