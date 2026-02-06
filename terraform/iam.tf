@@ -1,8 +1,3 @@
-variable "github_repo" {
-  description = "GitHub repository name (username/repo)"
-  type        = string
-}
-
 resource "google_iam_workload_identity_pool" "github_pool" {
   provider                  = google-beta
   workload_identity_pool_id = "github-pool"

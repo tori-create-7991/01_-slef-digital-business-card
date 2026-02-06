@@ -41,6 +41,7 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="project_id=${{ env.PROJECT_ID }}" \
+            -var="github_repo=${{ github.repository }}" \
             -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}"
 
