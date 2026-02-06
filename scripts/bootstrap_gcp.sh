@@ -20,6 +20,11 @@ if [ -z "$GH_REPO" ]; then
   read -p "Enter your GitHub Repository (username/repo): " GH_REPO
 fi
 
+# Clean up GH_REPO if it contains the full URL
+GH_REPO=${GH_REPO#"https://github.com/"}
+GH_REPO=${GH_REPO#"git@github.com:"}
+GH_REPO=${GH_REPO%".git"}
+
 echo "Setting up project: $PROJECT_ID"
 echo "For GitHub Repo: $GH_REPO"
 
@@ -43,6 +48,8 @@ SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 if ! gcloud iam service-accounts describe "$SA_EMAIL" &>/dev/null; then
   echo "Creating Service Account: $SA_NAME"
   gcloud iam service-accounts create "$SA_NAME" --display-name="Terraform GitHub Actions"
+  echo "Waiting 15 seconds for Service Account propagation..."
+  sleep 15
 else
   echo "Service Account $SA_NAME already exists."
 fi
