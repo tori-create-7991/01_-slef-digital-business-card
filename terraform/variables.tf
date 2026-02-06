@@ -15,6 +15,11 @@ variable "site_id" {
   default     = "" # If empty, defaults to project-id
 }
 
+variable "github_repo" {
+  description = "GitHub repository name (username/repo)"
+  type        = string
+}
+
 # Cloudflare
 variable "cloudflare_api_token" {
   description = "Cloudflare API Token"
