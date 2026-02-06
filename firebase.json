@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "card",
     "public": "dist",
     "ignore": [
       "firebase.json",
