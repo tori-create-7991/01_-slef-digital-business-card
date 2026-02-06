@@ -78,7 +78,7 @@ POOL_ID=$(gcloud iam workload-identity-pools describe "$POOL_NAME" --location="g
 
 # Create Provider
 if ! gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" --location="global" --workload-identity-pool="$POOL_NAME" &>/dev/null; then
-  gcloud iam workload-identity-pools providers create "$PROVIDER_NAME" \
+  gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_NAME" \
     --location="global" \
     --workload-identity-pool="$POOL_NAME" \
     --display-name="GitHub Actions Provider" \
