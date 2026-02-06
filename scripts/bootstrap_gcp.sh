@@ -77,16 +77,22 @@ fi
 POOL_ID=$(gcloud iam workload-identity-pools describe "$POOL_NAME" --location="global" --format="value(name)")
 
 # Create Provider
-if ! gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" --location="global" --workload-identity-pool="$POOL_NAME" &>/dev/null; then
-  gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_NAME" \
+# If provider exists, delete it first to ensure clean state with correct OIDC config
+if gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" --location="global" --workload-identity-pool="$POOL_NAME" &>/dev/null; then
+  echo "Provider $PROVIDER_NAME exists. Deleting to recreate..."
+  gcloud iam workload-identity-pools providers delete "$PROVIDER_NAME" \
     --location="global" \
     --workload-identity-pool="$POOL_NAME" \
-    --display-name="GitHub Actions Provider" \
-    --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
-    --issuer-uri="https://token.actions.githubusercontent.com"
-else
-  echo "Provider $PROVIDER_NAME already exists."
+    --quiet
 fi
+
+echo "Creating Provider $PROVIDER_NAME..."
+gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_NAME" \
+  --location="global" \
+  --workload-identity-pool="$POOL_NAME" \
+  --display-name="GitHub Actions Provider" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+  --issuer-uri="https://token.actions.githubusercontent.com"
 
 # Allow GitHub Repo to impersonate Service Account
 echo "Binding GitHub Repo to Service Account..."
