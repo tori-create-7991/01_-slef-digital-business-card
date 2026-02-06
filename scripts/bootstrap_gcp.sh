@@ -5,10 +5,9 @@ set -e
 REGION="us-central1"
 POOL_NAME="github-pool"
 PROVIDER_NAME="github-provider"
-SA_NAME="tf-action-sa"
 
 echo "==================================================="
-echo "   GCP Setup Script for Firebase + Terraform + WIF"
+echo "   GCP Setup Script for Firebase + Terraform + WIF (Direct)"
 echo "==================================================="
 
 # 1. Input Validation
@@ -43,25 +42,7 @@ else
   echo "Bucket $BUCKET_NAME already exists."
 fi
 
-# 4. Create Service Account
-SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
-if ! gcloud iam service-accounts describe "$SA_EMAIL" &>/dev/null; then
-  echo "Creating Service Account: $SA_NAME"
-  gcloud iam service-accounts create "$SA_NAME" --display-name="Terraform GitHub Actions"
-  echo "Waiting 15 seconds for Service Account propagation..."
-  sleep 15
-else
-  echo "Service Account $SA_NAME already exists."
-fi
-
-# 5. Grant Permissions to Service Account
-# Granting Owner to ensure Terraform can do everything (APIs, Firebase, etc.)
-echo "Granting 'Owner' role to Service Account..."
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:$SA_EMAIL" \
-  --role="roles/owner" --condition=None
-
-# 6. Setup Workload Identity Federation
+# 4. Setup Workload Identity Federation
 echo "Setting up Workload Identity Federation..."
 
 # Create Pool
@@ -94,11 +75,12 @@ gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_NAME" \
   --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 
-# Allow GitHub Repo to impersonate Service Account
-echo "Binding GitHub Repo to Service Account..."
-gcloud iam service-accounts add-iam-policy-binding "$SA_EMAIL" \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/${POOL_ID}/attribute.repository/${GH_REPO}"
+# 5. Grant Permissions Directly to WIF Principal
+# Granting Owner to the repository principal set
+echo "Granting 'Owner' role directly to GitHub Repository Principal..."
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="principalSet://iam.googleapis.com/${POOL_ID}/attribute.repository/${GH_REPO}" \
+  --role="roles/owner" --condition=None
 
 PROVIDER_FULL_NAME=$(gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" --location="global" --workload-identity-pool="$POOL_NAME" --format="value(name)")
 
@@ -111,11 +93,9 @@ echo ""
 echo "GCP_PROJECT_ID      : $PROJECT_ID"
 echo "GCP_TF_STATE_BUCKET : $BUCKET_NAME"
 echo "WIF_PROVIDER        : $PROVIDER_FULL_NAME"
-echo "WIF_SERVICE_ACCOUNT : $SA_EMAIL"
 echo ""
 echo "You can set these using GitHub CLI in Codespaces:"
 echo "gh secret set GCP_PROJECT_ID -b \"$PROJECT_ID\""
 echo "gh secret set GCP_TF_STATE_BUCKET -b \"$BUCKET_NAME\""
 echo "gh secret set WIF_PROVIDER -b \"$PROVIDER_FULL_NAME\""
-echo "gh secret set WIF_SERVICE_ACCOUNT -b \"$SA_EMAIL\""
 echo ""
