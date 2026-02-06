@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/google-beta"
       version = "~> 5.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -20,6 +24,10 @@ provider "google-beta" {
   project = var.project_id
   region  = var.region
   user_project_override = true
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 
 # Enable required APIs
@@ -55,17 +63,6 @@ resource "google_firebase_project" "default" {
     google_project_service.cloudresourcemanager,
   ]
 }
-
-# Create/Manage the Firebase Hosting Site
-# Note: The default site (project-id.web.app) is automatically created with the project
-# but we can reference it or create a new channel/site if needed.
-# For the main site, we usually just ensure the API is on.
-# But `google_firebase_hosting_site` resource exists to create *additional* sites.
-# To manage the *default* site, we just need the project to be a firebase project.
-# We will just output the site URL.
-
-# However, we can use `google_firebase_web_app` if we needed a web app config,
-# but for Hosting-only, just being a Firebase project is enough.
 
 output "hosting_site_url" {
   value = "https://${var.project_id}.web.app"
