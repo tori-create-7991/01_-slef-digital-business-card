@@ -54,38 +54,37 @@ echo "Initializing Terraform..."
 terraform init -migrate-state -backend-config="bucket=${BUCKET_NAME}"
 
 # Import logic to handle re-runs safely
-echo "Checking for existing WIF resources to import..."
+echo "Checking state for existing WIF resources..."
 
-# Construct full resource names for check and import
+# Construct full resource names for import
 POOL_ID="projects/${PROJECT_ID}/locations/global/workloadIdentityPools/${POOL_NAME}"
 PROVIDER_ID="${POOL_ID}/providers/${PROVIDER_NAME}"
 
-# Check and Import Pool
-if gcloud iam workload-identity-pools describe "$POOL_NAME" --location="global" >/dev/null 2>&1; then
-    echo "Found existing Pool: $POOL_NAME"
-    echo "Importing Pool into Terraform state..."
+# 1. Pool: Check if managed by Terraform
+if terraform state list | grep -q "google_iam_workload_identity_pool.github_pool"; then
+    echo "Pool is already managed by Terraform."
+else
+    echo "Pool is not in state. Attempting import..."
+    # Try to import. If it fails (e.g. resource doesn't exist), we ignore and let apply create it.
     terraform import \
       -var="project_id=${PROJECT_ID}" \
       -var="github_repo=${GH_REPO}" \
       -var="cloudflare_api_token=placeholder" \
       -var="cloudflare_zone_id=placeholder" \
-      google_iam_workload_identity_pool.github_pool "$POOL_ID" || echo "Pool import skipped (likely already managed)"
-else
-    echo "Pool '$POOL_NAME' does not exist yet. It will be created by terraform apply."
+      google_iam_workload_identity_pool.github_pool "$POOL_ID" || echo "Import failed or skipped. Resource will be created by apply."
 fi
 
-# Check and Import Provider
-if gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" --location="global" --workload-identity-pool="$POOL_NAME" >/dev/null 2>&1; then
-    echo "Found existing Provider: $PROVIDER_NAME"
-    echo "Importing Provider into Terraform state..."
+# 2. Provider: Check if managed by Terraform
+if terraform state list | grep -q "google_iam_workload_identity_pool_provider.github_provider"; then
+    echo "Provider is already managed by Terraform."
+else
+    echo "Provider is not in state. Attempting import..."
     terraform import \
       -var="project_id=${PROJECT_ID}" \
       -var="github_repo=${GH_REPO}" \
       -var="cloudflare_api_token=placeholder" \
       -var="cloudflare_zone_id=placeholder" \
-      google_iam_workload_identity_pool_provider.github_provider "$PROVIDER_ID" || echo "Provider import skipped (likely already managed)"
-else
-    echo "Provider '$PROVIDER_NAME' does not exist yet. It will be created by terraform apply."
+      google_iam_workload_identity_pool_provider.github_provider "$PROVIDER_ID" || echo "Import failed or skipped. Resource will be created by apply."
 fi
 
 echo "Applying Terraform for WIF resources..."
