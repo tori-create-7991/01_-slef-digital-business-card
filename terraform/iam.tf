@@ -27,12 +27,25 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   }
 }
 
-# Direct Workload Identity Federation: Grant roles directly to the PrincipalSet
-resource "google_project_iam_member" "wif_owner" {
+# Grant predefined roles to GitHub Actions via WIF
+# (Basic roles like roles/owner cannot be granted to principalSet://)
+locals {
+  wif_member = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
+  wif_roles = [
+    "roles/firebase.admin",                   # Firebase project & hosting
+    "roles/serviceusage.serviceUsageAdmin",    # Enable/disable APIs
+    "roles/resourcemanager.projectIamAdmin",   # Manage IAM bindings (for terraform)
+    "roles/iam.workloadIdentityPoolAdmin",     # Manage WIF pools (for terraform)
+    "roles/storage.admin",                     # Terraform state bucket
+  ]
+}
+
+resource "google_project_iam_member" "wif_roles" {
+  for_each = toset(local.wif_roles)
   provider = google-beta
   project  = var.project_id
-  role     = "roles/owner"
-  member   = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
+  role     = each.value
+  member   = local.wif_member
 }
 
 output "wif_provider_name" {
