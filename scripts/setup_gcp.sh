@@ -66,11 +66,12 @@ if terraform state list | grep -q "google_iam_workload_identity_pool.github_pool
 else
     echo "Pool is not in state. Attempting import..."
     # Try to import. If it fails (e.g. resource doesn't exist), we ignore and let apply create it.
+    # Use dummy Cloudflare token/zone (40/32 chars) to bypass validation during bootstrap
     terraform import \
       -var="project_id=${PROJECT_ID}" \
       -var="github_repo=${GH_REPO}" \
-      -var="cloudflare_api_token=placeholder" \
-      -var="cloudflare_zone_id=placeholder" \
+      -var="cloudflare_api_token=0000000000000000000000000000000000000000" \
+      -var="cloudflare_zone_id=00000000000000000000000000000000" \
       google_iam_workload_identity_pool.github_pool "$POOL_ID" || echo "Import failed or skipped. Resource will be created by apply."
 fi
 
@@ -79,24 +80,26 @@ if terraform state list | grep -q "google_iam_workload_identity_pool_provider.gi
     echo "Provider is already managed by Terraform."
 else
     echo "Provider is not in state. Attempting import..."
+    # Use dummy Cloudflare token/zone (40/32 chars) to bypass validation during bootstrap
     terraform import \
       -var="project_id=${PROJECT_ID}" \
       -var="github_repo=${GH_REPO}" \
-      -var="cloudflare_api_token=placeholder" \
-      -var="cloudflare_zone_id=placeholder" \
+      -var="cloudflare_api_token=0000000000000000000000000000000000000000" \
+      -var="cloudflare_zone_id=00000000000000000000000000000000" \
       google_iam_workload_identity_pool_provider.github_provider "$PROVIDER_ID" || echo "Import failed or skipped. Resource will be created by apply."
 fi
 
 echo "Applying Terraform for WIF resources..."
 # Only target the IAM/WIF resources. Use dummy values for Cloudflare as they are not targeted.
+# Use dummy Cloudflare token/zone (40/32 chars) to bypass validation during bootstrap
 terraform apply -auto-approve \
   -target=google_iam_workload_identity_pool.github_pool \
   -target=google_iam_workload_identity_pool_provider.github_provider \
   -target=google_project_iam_member.wif_owner \
   -var="project_id=${PROJECT_ID}" \
   -var="github_repo=${GH_REPO}" \
-  -var="cloudflare_api_token=placeholder" \
-  -var="cloudflare_zone_id=placeholder"
+  -var="cloudflare_api_token=0000000000000000000000000000000000000000" \
+  -var="cloudflare_zone_id=00000000000000000000000000000000"
 
 # Get the Provider Name for output
 # We can construct it reliably now that Terraform has run
