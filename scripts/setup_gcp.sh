@@ -54,11 +54,9 @@ gcloud services enable iam.googleapis.com cloudresourcemanager.googleapis.com se
 BUCKET_NAME="${PROJECT_ID}-tfstate"
 if ! gcloud storage buckets describe "gs://$BUCKET_NAME" &>/dev/null; then
   echo "Creating GCS Bucket for Terraform State: $BUCKET_NAME"
-  gcloud storage buckets create "gs://$BUCKET_NAME" --location="$REGION" --uniform-bucket-level-access
+  gcloud storage buckets create "gs://$BUCKET_NAME" --location="$REGION"
 else
   echo "Bucket $BUCKET_NAME already exists."
-  echo "Ensuring Uniform Bucket Level Access is enabled..."
-  gcloud storage buckets update "gs://$BUCKET_NAME" --uniform-bucket-level-access
 fi
 
 echo ""
