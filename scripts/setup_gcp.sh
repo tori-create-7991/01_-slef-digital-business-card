@@ -70,8 +70,74 @@ cd terraform
 echo "Initializing Terraform..."
 terraform init -migrate-state -backend-config="bucket=${BUCKET_NAME}"
 
-# 5. Full terraform apply - creates ALL resources (WIF, Firebase, DNS, etc.)
-#    This is idempotent: safe to run even if resources already exist.
+# 5. Import pre-existing resources into state (idempotency for re-runs)
+#    If resources exist in GCP but not in Terraform state (e.g., state was lost
+#    or a previous run partially failed), terraform apply would fail with
+#    409 "already exists" errors. We attempt to import each resource first;
+#    failures are expected if the resource does not yet exist (first run).
+echo "Importing any pre-existing resources into Terraform state..."
+
+TF_VARS=(
+  -var="project_id=${PROJECT_ID}"
+  -var="github_repo=${GH_REPO}"
+  -var="cloudflare_api_token=${CLOUDFLARE_API_TOKEN}"
+  -var="cloudflare_zone_id=${CLOUDFLARE_ZONE_ID}"
+)
+
+import_if_missing() {
+  local addr="$1" id="$2"
+  if terraform state list 2>/dev/null | grep -qF "$addr"; then
+    echo "  [skip] $addr (already in state)"
+  elif terraform import "${TF_VARS[@]}" "$addr" "$id" 2>/dev/null; then
+    echo "  [imported] $addr"
+  else
+    echo "  [skip] $addr (not yet in GCP, will be created)"
+  fi
+}
+
+# WIF Pool & Provider
+import_if_missing \
+  "google_iam_workload_identity_pool.github_pool" \
+  "projects/${PROJECT_ID}/locations/global/workloadIdentityPools/github-pool"
+
+import_if_missing \
+  "google_iam_workload_identity_pool_provider.github_provider" \
+  "projects/${PROJECT_ID}/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+
+# Firebase
+import_if_missing \
+  "google_firebase_project.default" \
+  "projects/${PROJECT_ID}"
+
+import_if_missing \
+  "google_firebase_hosting_site.card" \
+  "projects/${PROJECT_ID}/sites/${PROJECT_ID}-card"
+
+import_if_missing \
+  "google_firebase_hosting_custom_domain.card" \
+  "projects/${PROJECT_ID}/sites/${PROJECT_ID}-card/customDomains/card.tori-dev.com"
+
+# Google Project Services
+import_if_missing \
+  "google_project_service.firebase" \
+  "${PROJECT_ID}/firebase.googleapis.com"
+
+import_if_missing \
+  "google_project_service.serviceusage" \
+  "${PROJECT_ID}/serviceusage.googleapis.com"
+
+import_if_missing \
+  "google_project_service.cloudresourcemanager" \
+  "${PROJECT_ID}/cloudresourcemanager.googleapis.com"
+
+# Note: Cloudflare DNS records require record IDs (API lookup needed) for import.
+# Skipped here because the Cloudflare provider handles duplicate A records gracefully.
+
+echo "Import phase complete."
+echo ""
+
+# 6. Full terraform apply - creates ALL resources (WIF, Firebase, DNS, etc.)
+#    Pre-existing resources were imported above to prevent 409 errors.
 echo "Applying all Terraform resources..."
 terraform apply -auto-approve \
   -var="project_id=${PROJECT_ID}" \
