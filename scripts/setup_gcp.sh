@@ -88,14 +88,33 @@ import_if_missing() {
   local addr="$1" id="$2"
   if terraform state list 2>/dev/null | grep -qF "$addr"; then
     echo "  [skip] $addr (already in state)"
-  elif terraform import "${TF_VARS[@]}" "$addr" "$id" 2>/dev/null; then
+    return
+  fi
+  echo "  [import] Attempting: $addr"
+  local import_output
+  if import_output=$(terraform import "${TF_VARS[@]}" "$addr" "$id" 2>&1); then
     echo "  [imported] $addr"
   else
-    echo "  [skip] $addr (not yet in GCP, will be created)"
+    # Show the actual error for debugging, then continue
+    echo "  [skip] $addr — import failed (will try to create):"
+    echo "$import_output" | tail -5 | sed 's/^/    /'
   fi
 }
 
 # WIF Pool & Provider
+# GCP soft-deletes WIF pools for 30 days. During that period:
+#   - create → 409 (already exists)
+#   - import → fails (DELETED state)
+# We must undelete first, then import.
+echo "  Recovering any soft-deleted WIF resources..."
+gcloud iam workload-identity-pools undelete github-pool \
+  --location=global --project="$PROJECT_ID" 2>/dev/null \
+  && echo "  [undeleted] WIF pool github-pool" || true
+gcloud iam workload-identity-pools providers undelete github-provider \
+  --workload-identity-pool=github-pool \
+  --location=global --project="$PROJECT_ID" 2>/dev/null \
+  && echo "  [undeleted] WIF provider github-provider" || true
+
 import_if_missing \
   "google_iam_workload_identity_pool.github_pool" \
   "projects/${PROJECT_ID}/locations/global/workloadIdentityPools/github-pool"
