@@ -59,6 +59,14 @@ else
   echo "Bucket $BUCKET_NAME already exists."
   echo "Ensuring Uniform Bucket Level Access is enabled..."
   gcloud storage buckets update "gs://$BUCKET_NAME" --uniform-bucket-level-access
+  # Enabling UBLA disables legacy ACLs, so the current user may lose access.
+  # Grant explicit IAM role to ensure continued access to the state bucket.
+  CURRENT_USER=$(gcloud config get-value account 2>/dev/null)
+  if [ -n "$CURRENT_USER" ]; then
+    echo "Granting storage.admin to $CURRENT_USER on state bucket..."
+    gcloud storage buckets add-iam-policy-binding "gs://$BUCKET_NAME" \
+      --member="user:$CURRENT_USER" --role="roles/storage.admin" --quiet
+  fi
 fi
 
 echo ""
