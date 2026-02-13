@@ -25,6 +25,11 @@ variable "cloudflare_api_token" {
   description = "Cloudflare API Token"
   type        = string
   sensitive   = true
+
+  validation {
+    condition     = length(var.cloudflare_api_token) > 0
+    error_message = "cloudflare_api_token must not be empty. Check your CLOUDFLARE_API_TOKEN GitHub secret."
+  }
 }
 
 variable "cloudflare_zone_id" {

@@ -43,6 +43,9 @@ Add the following:
 - `GCP_PROJECT_ID`: Your GCP Project ID.
 - `GCP_TF_STATE_BUCKET`: The bucket name (e.g., `your-project-tfstate`).
 - `WIF_PROVIDER`: The full path to the Workload Identity Provider.
+- `GCP_SA_EMAIL`: The service account email (e.g., `github-actions-tf@your-project.iam.gserviceaccount.com`).
+- `CLOUDFLARE_API_TOKEN`: Your Cloudflare API Token (needs Zone > DNS > Edit permission).
+- `CLOUDFLARE_ZONE_ID`: Your Cloudflare Zone ID for `tori-dev.com`.
 
 ### 3. Deploy
 1. Push your code to the `main` branch.

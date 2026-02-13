@@ -50,6 +50,39 @@ gcloud config set project "$PROJECT_ID"
 echo "Enabling required APIs..."
 gcloud services enable iam.googleapis.com cloudresourcemanager.googleapis.com serviceusage.googleapis.com
 
+# 2b. Create Service Account for GitHub Actions
+#     Direct WIF produces a federated token, but many Google APIs require an
+#     OAuth 2 access token. A service account enables the impersonation flow
+#     that produces a proper OAuth 2 token.
+SA_NAME="github-actions-tf"
+SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+echo "Creating service account for GitHub Actions..."
+if gcloud iam service-accounts describe "$SA_EMAIL" --project="$PROJECT_ID" &>/dev/null; then
+  echo "Service account $SA_EMAIL already exists."
+else
+  gcloud iam service-accounts create "$SA_NAME" \
+    --display-name="GitHub Actions Terraform" \
+    --description="Service account impersonated by GitHub Actions via WIF" \
+    --project="$PROJECT_ID"
+  echo "Created service account: $SA_EMAIL"
+fi
+
+echo "Granting IAM roles to service account..."
+SA_ROLES=(
+  "roles/firebase.admin"
+  "roles/serviceusage.serviceUsageAdmin"
+  "roles/resourcemanager.projectIamAdmin"
+  "roles/iam.workloadIdentityPoolAdmin"
+  "roles/storage.admin"
+)
+for role in "${SA_ROLES[@]}"; do
+  gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="$role" \
+    --quiet
+done
+echo "IAM roles granted."
+
 # 3. Create Terraform State Bucket (cannot be managed by Terraform itself)
 BUCKET_NAME="${PROJECT_ID}-tfstate"
 if ! gcloud storage buckets describe "gs://$BUCKET_NAME" &>/dev/null; then
@@ -159,6 +192,11 @@ import_if_missing \
   "google_project_service.cloudresourcemanager" \
   "${PROJECT_ID}/cloudresourcemanager.googleapis.com"
 
+# Service Account
+import_if_missing \
+  "google_service_account.github_actions" \
+  "projects/${PROJECT_ID}/serviceAccounts/${SA_EMAIL}"
+
 # Note: Cloudflare DNS records require record IDs (API lookup needed) for import.
 # Skipped here because the Cloudflare provider handles duplicate A records gracefully.
 
@@ -177,6 +215,19 @@ terraform apply -auto-approve \
 # Get the WIF Provider Name from Terraform output
 PROVIDER_FULL_NAME=$(terraform output -raw wif_provider_name)
 
+# Safety net: ensure WIF principal can impersonate the service account
+# (Terraform should handle this, but gcloud is idempotent and ensures it)
+WIF_POOL_NAME=$(gcloud iam workload-identity-pools describe github-pool \
+  --location=global --project="$PROJECT_ID" --format="value(name)" 2>/dev/null || true)
+if [ -n "$WIF_POOL_NAME" ]; then
+  echo "Ensuring WIF impersonation binding on service account..."
+  gcloud iam service-accounts add-iam-policy-binding "$SA_EMAIL" \
+    --project="$PROJECT_ID" \
+    --role="roles/iam.workloadIdentityUser" \
+    --member="principalSet://iam.googleapis.com/${WIF_POOL_NAME}/attribute.repository/${GH_REPO}" \
+    --quiet
+fi
+
 cd ..
 
 echo ""
@@ -190,6 +241,7 @@ echo ""
 echo "GCP_PROJECT_ID      : $PROJECT_ID"
 echo "GCP_TF_STATE_BUCKET : $BUCKET_NAME"
 echo "WIF_PROVIDER        : $PROVIDER_FULL_NAME"
+echo "GCP_SA_EMAIL        : $SA_EMAIL"
 echo "CLOUDFLARE_API_TOKEN: (Your Cloudflare API Token)"
 echo "CLOUDFLARE_ZONE_ID  : (Your Cloudflare Zone ID)"
 echo ""

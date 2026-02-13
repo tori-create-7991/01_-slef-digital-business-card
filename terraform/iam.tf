@@ -27,28 +27,50 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   }
 }
 
-# Grant predefined roles to GitHub Actions via WIF
-# (Basic roles like roles/owner cannot be granted to principalSet://)
+# Service account for GitHub Actions CI/CD
+# Direct WIF (principalSet) produces a federated token, but many Google APIs
+# (including Firebase) require an OAuth 2 access token. Service account
+# impersonation exchanges the federated token for a proper OAuth 2 token.
+resource "google_service_account" "github_actions" {
+  account_id   = "github-actions-tf"
+  display_name = "GitHub Actions Terraform"
+  description  = "Service account impersonated by GitHub Actions via WIF"
+  project      = var.project_id
+}
+
 locals {
   wif_member = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
-  wif_roles = [
-    "roles/firebase.admin",                   # Firebase project & hosting
-    "roles/serviceusage.serviceUsageAdmin",    # Enable/disable APIs
-    "roles/resourcemanager.projectIamAdmin",   # Manage IAM bindings (for terraform)
-    "roles/iam.workloadIdentityPoolAdmin",     # Manage WIF pools (for terraform)
-    "roles/storage.admin",                     # Terraform state bucket
+  sa_member  = "serviceAccount:${google_service_account.github_actions.email}"
+  sa_roles = [
+    "roles/firebase.admin",                # Firebase project & hosting
+    "roles/serviceusage.serviceUsageAdmin", # Enable/disable APIs
+    "roles/resourcemanager.projectIamAdmin", # Manage IAM bindings (for terraform)
+    "roles/iam.workloadIdentityPoolAdmin",  # Manage WIF pools (for terraform)
+    "roles/storage.admin",                  # Terraform state bucket
   ]
 }
 
-resource "google_project_iam_member" "wif_roles" {
-  for_each = toset(local.wif_roles)
-  provider = google-beta
+# Grant roles to the service account
+resource "google_project_iam_member" "sa_roles" {
+  for_each = toset(local.sa_roles)
   project  = var.project_id
   role     = each.value
-  member   = local.wif_member
+  member   = local.sa_member
+}
+
+# Allow the WIF principal to impersonate the service account
+resource "google_service_account_iam_member" "wif_impersonation" {
+  service_account_id = google_service_account.github_actions.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = local.wif_member
 }
 
 output "wif_provider_name" {
   value       = google_iam_workload_identity_pool_provider.github_provider.name
   description = "The full name of the Workload Identity Provider"
+}
+
+output "service_account_email" {
+  value       = google_service_account.github_actions.email
+  description = "The email of the GitHub Actions service account"
 }
