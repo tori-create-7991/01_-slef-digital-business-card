@@ -7,11 +7,18 @@ export type SiteMeta = {
 export type Profile = {
   name: string
   role: string
+  bio: string
   imageUrl: string
   imageAlt: string
 }
 
-export type SocialCard = {
+export type CardCategory = 'sns' | 'hobby' | 'service'
+
+export type CardCategoryFields = {
+  category?: CardCategory
+}
+
+export type SocialCard = CardCategoryFields & {
   type: 'social'
   className: string
   url: string
@@ -28,7 +35,7 @@ export type ScrapeFields = {
   fallbackDescription?: string
 }
 
-export type LinkCard = {
+export type LinkCard = CardCategoryFields & {
   type: 'link'
   className: string
   url: string
@@ -37,7 +44,7 @@ export type LinkCard = {
   sublabel: string
 } & ScrapeFields
 
-export type InstagramCard = {
+export type InstagramCard = CardCategoryFields & {
   type: 'instagram'
   url: string
   iconClass: string
@@ -72,73 +79,16 @@ export const siteConfig: SiteConfig = {
   profile: {
     name: 'Ryo.Tonegawa',
     role: 'フリーランス エンジニア & 講師',
+    bio: 'Web開発・講師・DX/AXのご相談、お気軽にどうぞ。',
     imageUrl: profileImage,
     imageAlt: 'Ryo.Tonegawaのプロフィール画像',
   },
   cards: [
     {
-      type: 'social',
-      className: 'twitter',
-      url: 'https://x.com/tori_create',
-      iconClass: 'fa-brands fa-twitter',
-      label: 'Twitter',
-      sublabel: 'tori_create',
-    },
-    {
-      type: 'instagram',
-      url: 'https://instagram.com/ryo_fren',
-      sourceUrl: 'https://instagram.com/ryo_fren',
-      scrape: true,
-      iconClass: 'fa-brands fa-instagram',
-      label: 'Instagram',
-      sublabel: '@ryo_fren',
-      fallbackLabel: 'Instagram',
-      fallbackDescription: '@ryo_fren',
-      fallbackImage: '/images/profile-ryo.png',
-      images: [
-        {
-          src: '/images/profile-ryo.png',
-          alt: 'Ryo tonegawa のInstagramトップ',
-          href: 'https://instagram.com/ryo_fren',
-          sourceUrl: 'https://instagram.com/ryo_fren',
-          scrape: false,
-        },
-        {
-          src: '/images/profile-ryo.png',
-          alt: 'アウトドアアクティビティのInstagram投稿',
-          href: 'https://www.instagram.com/stories/highlights/17854270029305438/',
-          sourceUrl:
-            'https://www.instagram.com/stories/highlights/17854270029305438/',
-        },
-        {
-          src: '/images/profile-ryo.png',
-          alt: '旅行先のInstagram投稿',
-          href: 'https://www.instagram.com/stories/highlights/17976581579895976/',
-          sourceUrl:
-            'https://www.instagram.com/stories/highlights/17976581579895976/',
-        },
-        {
-          src: '/images/profile-ryo.png',
-          alt: '読書のInstagram投稿',
-          href: 'https://www.instagram.com/stories/highlights/18098263855581241/',
-          sourceUrl:
-            'https://www.instagram.com/stories/highlights/18098263855581241/',
-        },
-      ],
-    },
-    {
-      type: 'social',
-      className: 'github',
-      url: 'https://github.com/rito-aither',
-      iconClass: 'fa-brands fa-github',
-      label: 'GitHub',
-      sublabel: 'rito-aither',
-    },
-    {
       type: 'link',
       className: 'website',
-      url: 'http://tori-dev.com/',
-      sourceUrl: 'http://tori-dev.com/',
+      url: 'https://tori-dev.com/',
+      sourceUrl: 'https://tori-dev.com/',
       scrape: true,
       previewImageUrl:
         'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly90b3JpLWRldi5jb20vaW1hZ2VzL2FsZm9ucy1tb3JhbGVzLVlMU3dqU3k3c3R3LXVuc3BsYXNoLmpwZw==.jpeg',
@@ -150,47 +100,90 @@ export const siteConfig: SiteConfig = {
       fallbackDescription: 'tori-dev.com',
     },
     {
-      type: 'link',
-      className: 'yamap',
-      url: 'https://yamap.com/users/2542531',
-      sourceUrl: 'https://yamap.com/users/2542531',
-      scrape: true,
-      previewImageUrl:
-        'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly9hc3NldHMueWFtYXAuY29tL2ltYWdlcy9vZ3BfbmV3LnBuZw==.png',
-      label: 'ryo | YAMAP / ヤマップ',
-      sublabel: 'yamap.com',
-      fallbackImage:
-        'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly9hc3NldHMueWFtYXAuY29tL2ltYWdlcy9vZ3BfbmV3LnBuZw==.png',
-      fallbackLabel: 'ryo | YAMAP / ヤマップ',
-      fallbackDescription: 'yamap.com',
+      type: 'social',
+      className: 'twitter',
+      url: 'https://x.com/tori_create',
+      category: 'sns',
+      iconClass: 'fa-brands fa-twitter',
+      label: 'Twitter',
+      sublabel: 'tori_create',
+    },
+    {
+      type: 'social',
+      className: 'instagram',
+      url: 'https://www.instagram.com/tori_create_7991/',
+      category: 'sns',
+      iconClass: 'fa-brands fa-instagram',
+      label: 'Instagram',
+      sublabel: '@tori_create_7991',
+    },
+    {
+      type: 'social',
+      className: 'threads',
+      url: 'https://www.threads.com/@tori_create_7991',
+      category: 'sns',
+      iconClass: 'fa-brands fa-threads',
+      label: 'Threads',
+      sublabel: '@tori_create_7991',
+    },
+    {
+      type: 'social',
+      className: 'bluesky',
+      url: 'https://bsky.app/profile/tori-create-7991.bsky.social',
+      category: 'sns',
+      iconClass: 'fa-brands fa-bluesky',
+      label: 'Bluesky',
+      sublabel: 'bsky.app',
     },
     {
       type: 'social',
       className: 'linkedin',
       url: 'https://linkedin.com/in/tori-dev',
+      category: 'sns',
       iconClass: 'fa-brands fa-linkedin',
       label: 'LinkedIn',
       sublabel: 'tori-dev',
     },
     {
-      type: 'link',
+      type: 'social',
+      className: 'facebook',
+      url: 'https://www.facebook.com/profile.php?id=100004853536494',
+      category: 'sns',
+      iconClass: 'fa-brands fa-facebook',
+      label: 'Facebook',
+      sublabel: 'ryo.tonegawa',
+    },
+    {
+      type: 'social',
       className: 'wantedly',
       url: 'https://www.wantedly.com/id/ryo_tonegawa',
-      sourceUrl: 'https://www.wantedly.com/id/ryo_tonegawa',
-      scrape: true,
-      previewImageUrl:
-        'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly93d3cud2FudGVkbHkuY29tL3VzZXJzLzE3ODM4NDU0L3NoYXJlX2ltYWdl.jpeg',
+      category: 'sns',
+      iconClass: 'fa-solid fa-briefcase',
       label: '利根川 諒のプロフィール',
       sublabel: 'Wantedly',
-      fallbackImage:
-        'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly93d3cud2FudGVkbHkuY29tL3VzZXJzLzE3ODM4NDU0L3NoYXJlX2ltYWdl.jpeg',
-      fallbackLabel: '利根川 諒のプロフィール',
-      fallbackDescription: 'Wantedly',
+    },
+    {
+      type: 'social',
+      className: 'youtrust',
+      url: 'https://youtrust.jp/users/ryo_tonegawa',
+      category: 'sns',
+      iconClass: 'fa-solid fa-users',
+      label: 'YOUTRUST',
+      sublabel: 'ryo_tonegawa',
+    },
+    {
+      type: 'social',
+      className: 'github',
+      url: 'https://github.com/tori-create-7991',
+      iconClass: 'fa-brands fa-github',
+      label: 'GitHub',
+      sublabel: 'tori-create-7991',
     },
     {
       type: 'link',
       className: 'lancers',
       url: 'https://www.lancers.jp/profile/rito-1345',
+      category: 'service',
       sourceUrl: 'https://www.lancers.jp/profile/rito-1345',
       scrape: true,
       previewImageUrl:
@@ -203,17 +196,26 @@ export const siteConfig: SiteConfig = {
       fallbackDescription: 'lancers.jp',
     },
     {
-      type: 'social',
-      className: 'facebook',
-      url: 'https://www.facebook.com/profile.php?id=100004853536494',
-      iconClass: 'fa-brands fa-facebook',
-      label: 'Facebook',
-      sublabel: 'ryo.tonegawa',
+      type: 'link',
+      className: 'yamap',
+      url: 'https://yamap.com/users/2542531',
+      category: 'hobby',
+      sourceUrl: 'https://yamap.com/users/2542531',
+      scrape: true,
+      previewImageUrl:
+        'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly9hc3NldHMueWFtYXAuY29tL2ltYWdlcy9vZ3BfbmV3LnBuZw==.png',
+      label: 'ryo | YAMAP / ヤマップ',
+      sublabel: 'yamap.com',
+      fallbackImage:
+        'https://storage.googleapis.com/creatorspace-public/sites/ogimages/aHR0cHM6Ly9hc3NldHMueWFtYXAuY29tL2ltYWdlcy9vZ3BfbmV3LnBuZw==.png',
+      fallbackLabel: 'ryo | YAMAP / ヤマップ',
+      fallbackDescription: 'yamap.com',
     },
     {
       type: 'link',
       className: 'sora',
       url: 'https://sora.chatgpt.com/profile/tori_24',
+      category: 'hobby',
       sourceUrl: 'https://sora.chatgpt.com/profile/tori_24',
       scrape: true,
       previewImageUrl:
