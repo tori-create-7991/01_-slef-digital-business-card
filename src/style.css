@@ -99,6 +99,13 @@ body {
   line-height: 1.5;
 }
 
+.profile-text .profile-bio {
+  margin-top: 12px;
+  color: var(--text-color);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 /* Social Cards (Small Squares) */
 .social-card {
   grid-column: span 1;
@@ -114,6 +121,31 @@ body {
 .social-card .icon-wrapper {
   font-size: 2.3rem;
   margin-bottom: 10px;
+}
+
+.category-section {
+  grid-column: span 2;
+  grid-row: span var(--category-row-count);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-section h2 {
+  padding: 0 4px 10px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.18);
+  color: var(--text-color);
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(var(--category-row-count), minmax(0, 1fr));
+  flex: 1;
+  gap: var(--gap);
 }
 
 .card-label {
@@ -138,6 +170,12 @@ body {
 .facebook { background-color: #1877F2; color: white; }
 .github { background-color: #24292e; color: white; }
 .github .card-sublabel { color: rgba(255,255,255,0.8); }
+.threads { background-color: #101010; color: white; }
+.threads .card-sublabel { color: rgba(255,255,255,0.78); }
+.bluesky { background-color: #005bb5; color: white; }
+.bluesky .card-sublabel { color: white; }
+.youtrust { background-color: #16836f; color: white; }
+.youtrust .card-sublabel { color: rgba(255,255,255,0.82); }
 
 /* Instagram Card (Large) */
 .instagram-card {
@@ -273,6 +311,17 @@ body {
     grid-column: span 1 !important;
     grid-row: span 1 !important;
     min-height: 150px;
+  }
+
+  .category-section {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .category-cards {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
   }
 
   .profile-card {
