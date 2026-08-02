@@ -148,6 +148,10 @@ body {
   gap: var(--gap);
 }
 
+.category-section--service .social-card {
+  grid-column: span 2;
+}
+
 .card-label {
   font-weight: 700;
   font-size: 1.02rem;

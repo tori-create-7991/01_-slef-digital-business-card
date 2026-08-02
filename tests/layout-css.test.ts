@@ -27,4 +27,9 @@ describe("layout hardening styles", () => {
     expect(css).toContain("min-width: 0");
     expect(css).toContain("overflow-wrap: anywhere");
   });
+
+  it("renders service social cards at the full category width", () => {
+    expect(css).toContain(".category-section--service .social-card");
+    expect(css).toContain("grid-column: span 2");
+  });
 });
