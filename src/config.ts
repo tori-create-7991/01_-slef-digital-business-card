@@ -175,6 +175,7 @@ export const siteConfig: SiteConfig = {
       type: 'social',
       className: 'github',
       url: 'https://github.com/tori-create-7991',
+      category: 'service',
       iconClass: 'fa-brands fa-github',
       label: 'GitHub',
       sublabel: 'tori-create-7991',

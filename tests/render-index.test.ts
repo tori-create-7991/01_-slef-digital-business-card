@@ -66,7 +66,7 @@ describe("renderIndexHtml", () => {
     expect(html).toContain('<h2 id="sns-heading">SNS</h2>');
     expect(html).toContain('class="category-section category-section--hobby category-section--count-2"');
     expect(html).toContain('<h2 id="hobby-heading">HOBBY</h2>');
-    expect(html).toContain('class="category-section category-section--service category-section--count-1"');
+    expect(html).toContain('class="category-section category-section--service category-section--count-2"');
     expect(html).toContain('<h2 id="service-heading">SERVICE</h2>');
     expect(html.indexOf('id="service-heading"')).toBeLessThan(
       html.indexOf('id="hobby-heading"'),
@@ -105,6 +105,9 @@ describe("renderIndexHtml", () => {
     });
     expect(
       siteConfig.cards.find((card) => card.className === "lancers"),
+    ).toMatchObject({ category: "service" });
+    expect(
+      siteConfig.cards.find((card) => card.className === "github"),
     ).toMatchObject({ category: "service" });
     expect(
       siteConfig.cards.find((card) => card.className === "sora"),
