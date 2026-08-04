@@ -32,4 +32,10 @@ describe("layout hardening styles", () => {
     expect(css).toContain(".category-section--service .social-card");
     expect(css).toContain("grid-column: span 2");
   });
+
+  it("keeps the final LINE social card accessible and full width", () => {
+    expect(css).toContain(".category-section--sns .lineworks");
+    expect(css).toContain(".lineworks { background-color: #007a33; color: white; }");
+    expect(css).toContain(".lineworks .card-sublabel { color: white; }");
+  });
 });

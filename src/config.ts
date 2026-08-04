@@ -197,6 +197,15 @@ export const siteConfig: SiteConfig = {
       fallbackDescription: 'lancers.jp',
     },
     {
+      type: 'social',
+      className: 'lineworks',
+      url: 'https://contact.worksmobile.com/p/worksat-invitation?externalCode=fb5f0b8d-90d5-4f30-a7ca-04ca136376ed',
+      category: 'sns',
+      iconClass: 'fa-brands fa-line',
+      label: 'LINE',
+      sublabel: 'works.do',
+    },
+    {
       type: 'link',
       className: 'yamap',
       url: 'https://yamap.com/users/2542531',
