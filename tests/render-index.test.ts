@@ -61,8 +61,8 @@ describe("renderIndexHtml", () => {
     const html = renderIndexHtml(siteConfig);
     const snsCards = siteConfig.cards.filter((card) => card.category === "sns");
 
-    expect(html).toContain('class="category-section category-section--sns category-section--count-8"');
-    expect(html).toContain('style="--category-row-count: 4"');
+    expect(html).toContain('class="category-section category-section--sns category-section--count-9"');
+    expect(html).toContain('style="--category-row-count: 5"');
     expect(html).toContain('<h2 id="sns-heading">SNS</h2>');
     expect(html).toContain('class="category-section category-section--hobby category-section--count-2"');
     expect(html).toContain('<h2 id="hobby-heading">HOBBY</h2>');
@@ -80,8 +80,10 @@ describe("renderIndexHtml", () => {
       "Facebook",
       "利根川 諒のプロフィール",
       "YOUTRUST",
+      "LINE",
     ]);
     expect(snsCards.map((card) => card.type)).toEqual([
+      "social",
       "social",
       "social",
       "social",
@@ -109,6 +111,13 @@ describe("renderIndexHtml", () => {
     expect(
       siteConfig.cards.find((card) => card.className === "github"),
     ).toMatchObject({ category: "service" });
+    expect(
+      siteConfig.cards.find((card) => card.className === "lineworks"),
+    ).toMatchObject({
+      category: "sns",
+      label: "LINE",
+      url: "https://contact.worksmobile.com/p/worksat-invitation?externalCode=fb5f0b8d-90d5-4f30-a7ca-04ca136376ed",
+    });
     expect(
       siteConfig.cards.find((card) => card.className === "sora"),
     ).toMatchObject({ category: "hobby" });
@@ -150,6 +159,6 @@ describe("renderIndexHtml", () => {
       cards: [...siteConfig.cards, instagramCard],
     });
 
-    expect(html).toContain('style="--category-row-count: 6"');
+    expect(html).toContain('style="--category-row-count: 7"');
   });
 });

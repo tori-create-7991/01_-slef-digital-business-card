@@ -152,6 +152,10 @@ body {
   grid-column: span 2;
 }
 
+.category-section--sns .lineworks {
+  grid-column: span 2;
+}
+
 .card-label {
   font-weight: 700;
   font-size: 1.02rem;
@@ -174,6 +178,8 @@ body {
 .facebook { background-color: #1877F2; color: white; }
 .github { background-color: #24292e; color: white; }
 .github .card-sublabel { color: rgba(255,255,255,0.8); }
+.lineworks { background-color: #007a33; color: white; }
+.lineworks .card-sublabel { color: white; }
 .threads { background-color: #101010; color: white; }
 .threads .card-sublabel { color: rgba(255,255,255,0.78); }
 .bluesky { background-color: #005bb5; color: white; }
